@@ -1,4 +1,6 @@
 import Image from "next/image";
+import Pprtest from "@/components/pprtest";
+import { Suspense } from "react";
 
 export default function Home() {
   return (
@@ -6,6 +8,9 @@ export default function Home() {
       <h1 className="text-5xl"> Hi, welcome to REKr casino!!</h1>
       <div className="flex flex-col gap-2 p-2">
         <div className="w-full h-32 bg-red-700">awdawdaw</div>
+        <Suspense fallback="loading">
+          <Pprtest></Pprtest>
+        </Suspense>
         <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-2">
           <div className="bg-stone-600  h-32">qwe</div>
           <div className="bg-red-300    h-32">qwe</div>
