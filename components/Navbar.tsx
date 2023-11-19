@@ -1,6 +1,7 @@
 import Link from "next/link";
 import React, { Suspense } from "react";
 import Signin from "./Signin";
+import Balance from "./Balance";
 
 export default function Navbar() {
   return (
@@ -15,8 +16,13 @@ export default function Navbar() {
         Slots
       </Link>
       <div className="p-2 flex-grow"></div>
+      <Suspense
+        fallback={<div className="text-white p-2">Loading...</div>}
+      >
+        <Balance />
+      </Suspense>
       <Suspense fallback={<Signin suspense />}>
-        <Signin/>
+        <Signin />
       </Suspense>
     </nav>
   );

@@ -24,9 +24,8 @@ model Account {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId])
-
   @@unique([provider, providerAccountId])
+  @@index([userId])
 }
 
 model Session {
@@ -47,6 +46,7 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+  rekr_coins    BigInt    @default(1000)
 }
 
 model VerificationToken {
