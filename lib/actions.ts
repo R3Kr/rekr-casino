@@ -14,7 +14,7 @@ export async function playHigherOrLowerAction(
   user_amount: number,
   user_bet: Bet
 ) {
-  const amount = z.number().parse(user_amount); //z.ZodNumber() user_amount;
+  const amount = z.number().nonnegative().parse(user_amount); //z.ZodNumber() user_amount;
   const bet = z
     .union([z.literal("higher"), z.literal("equal"), z.literal("lower")])
     .parse(user_bet);
@@ -80,7 +80,20 @@ export async function playHigherOrLowerAction(
   revalidatePath("/higherorlower");
 
   return {
-    oldHiddenCard: highorlow.hidden_card as 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13,
+    oldHiddenCard: highorlow.hidden_card as
+      | 1
+      | 2
+      | 3
+      | 4
+      | 5
+      | 6
+      | 7
+      | 8
+      | 9
+      | 10
+      | 11
+      | 12
+      | 13,
     won: result.won,
     correct_guess: result.correct_bet,
     balance_added: result.balanceAddition,
