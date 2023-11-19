@@ -1,7 +1,7 @@
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { getServerSession } from "next-auth";
 import Link from "next/link";
 import React from "react";
+import { authOptions } from "@/lib/authOptions";
 
 interface Props {
   suspense?: boolean;
