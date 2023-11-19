@@ -47,6 +47,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   rekr_coins    BigInt    @default(1000)
+  high_or_low   HighOrLow?
 }
 
 model VerificationToken {
@@ -55,4 +56,14 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model HighOrLow {
+  userId       String @id
+  visible_card Int
+  hidden_card  Int
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
