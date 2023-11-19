@@ -17,12 +17,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className + " bg-slate-800"}>
-        <Navbars></Navbars>
-        {children}
-        <Analytics/>
-      </body>
-    </html>
+      <html lang="en">
+        <body className={inter.className + " bg-slate-800"}>
+          <Navbars></Navbars>
+          {children}
+          <Analytics />
+        </body>
+      </html>
   );
 }
