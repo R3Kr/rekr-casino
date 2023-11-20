@@ -49,6 +49,7 @@ model User {
   rekr_coins    BigInt    @default(1000)
   high_or_low   HighOrLow?
   daily_claims  DailyClaim[]
+  referrals     Referral[]
 }
 
 model VerificationToken {
@@ -78,4 +79,22 @@ model DailyClaim {
 
 
   @@index([userId])
+}
+
+model Referral {
+  id    String    @id @default(cuid())
+  userId String
+  referralType ReferralType
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+
+  @@index([userId])
+}
+
+
+
+enum ReferralType {
+  GITHUB_FOLLOW
+  REKR_CASINO_STAR
 }
