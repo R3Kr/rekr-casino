@@ -23,7 +23,7 @@ export function play(
 
   const won = bet === correct_bet;
 
-  const balanceAddition = !won ? 0 : bet === "equal" ? amount * 10 : amount * 1.5;
+  const balanceAddition = !won ? 0 : bet === "equal" ? amount * 10 : amount * 1.3;
 
   const newcard = getRandomNumber(1, 13);
 
