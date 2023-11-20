@@ -34,5 +34,5 @@ export default function Slot({ symbol, pending }: Props) {
 
     return animation.stop;
   }, []);
-  return <motion.div className="text-5xl select-none">{pending ? "?" : symbol}</motion.div>;
+  return <motion.div className="outline outline-cyan-700 text-5xl select-none p-2">{pending ? "?" : symbol}</motion.div>;
 }

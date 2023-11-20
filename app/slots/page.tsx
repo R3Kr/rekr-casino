@@ -38,7 +38,7 @@ export default function Page() {
   });
 
   return (
-    <div className="">
+    <div className="flex flex-col justify-center">
       <motion.div
         animate={{ x: [0, 100, 0] }}
         transition={{ ease: "easeOut", duration: 2 }}
@@ -46,8 +46,8 @@ export default function Page() {
       >
         Welcome to the slotmachine! Time to spin away!
       </motion.div>
-      <div className="p-2 bg-red-400">Profit: {profit}</div>
-      <div className="flex pt-32">
+      <div className="flex p-2 text-white justify-center">Profit: {profit}</div>
+      <div className="flex justify-center p-2">
         <div className="grid grid-cols-3 gap-2">
           <Slot symbol={board[0]} pending={isPending}></Slot>
           <Slot symbol={board[1]} pending={isPending}></Slot>
@@ -59,11 +59,11 @@ export default function Page() {
           <Slot symbol={board[7]} pending={isPending}></Slot>
           <Slot symbol={board[8]} pending={isPending}></Slot>
         </div>
-        
       </div>
-      <button className="p-2 bg-red-400" onClick={() => mutate()}>
-          Play
-        </button>
+
+      <button className="p-2 bg-red-400 align-middle" onClick={() => mutate()}>
+        Play
+      </button>
     </div>
   );
 }
