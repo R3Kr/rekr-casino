@@ -1,4 +1,4 @@
-export type SlotSymbol = ["💩", 0] | ["🍎", 1.1] | ["🌯", 2.2] | ["🤑", 15];
+export type SlotSymbol = ["💩", 0] | ["🍎", 1.1] | ["🌯", 2.2] | ["🤑", 20];
 
 function getSlot(): SlotSymbol {
   const rand = Math.random();
@@ -8,7 +8,7 @@ function getSlot(): SlotSymbol {
     ? ["🍎", 1.1]
     : rand < 0.9
     ? ["🌯", 2.2]
-    : ["🤑", 15];
+    : ["🤑", 20];
 }
 
 function getBoard(): SlotSymbol[] {
