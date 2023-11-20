@@ -48,6 +48,7 @@ model User {
   sessions      Session[]
   rekr_coins    BigInt    @default(1000)
   high_or_low   HighOrLow?
+  daily_claims  DailyClaim[]
 }
 
 model VerificationToken {
@@ -64,6 +65,17 @@ model HighOrLow {
   hidden_card  Int
 
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model DailyClaim {
+  id    String    @id @default(cuid())
+  date  DateTime  @default(now())
+  userId String
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
 
   @@index([userId])
 }

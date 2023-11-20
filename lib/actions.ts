@@ -14,7 +14,7 @@ export async function playHigherOrLowerAction(
   user_amount: number,
   user_bet: Bet
 ) {
-  const amount = z.number().nonnegative().parse(user_amount); //z.ZodNumber() user_amount;
+  const amount = z.number().nonnegative().multipleOf(10).parse(user_amount); //z.ZodNumber() user_amount;
   const bet = z
     .union([z.literal("higher"), z.literal("equal"), z.literal("lower")])
     .parse(user_bet);
