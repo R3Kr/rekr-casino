@@ -1,29 +1,69 @@
 "use client";
-import React from "react";
+import React, { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { animate } from "framer-motion";
+import { motion } from "framer-motion";
+import { useMotionValue } from "framer-motion";
+import { useTransform } from "framer-motion";
+import { useEffect } from "react";
+import Slot from "@/components/Slot";
+import { SlotSymbol } from "@/lib/slotMachineGame";
+import { useMutation } from "@tanstack/react-query";
+import { playSlotMachineAction } from "@/lib/actions";
+
+const arr: SlotSymbol[0][] = ["💩", "🍎", "🌯", "🤑"];
 
 export default function Page() {
-  const router = useRouter();
+  let [board, setBoard] = useState<Array<SlotSymbol[0]>>([
+    "💩",
+    "💩",
+    "💩",
+    "💩",
+    "💩",
+    "💩",
+    "💩",
+    "💩",
+    "💩",
+  ]);
+  let [profit, setProfit] = useState(0);
+  const { isPending, mutate } = useMutation({
+    mutationFn: () => playSlotMachineAction(10),
+    onError(error, variables, context) {
+      alert(error);
+    },
+    onSuccess(data, variables, context) {
+      setBoard(data.board.map((s) => s[0]));
+      setProfit(data.profit);
+    },
+  });
+
   return (
-    <>
-      <h1 className="text-7xl text-cyan-300 p-2">
+    <div className="">
+      <motion.div
+        animate={{ x: [0, 100, 0] }}
+        transition={{ ease: "easeOut", duration: 2 }}
+        className="text-7xl text-cyan-300 p-2"
+      >
         Welcome to the slotmachine! Time to spin away!
-      </h1>
-      <div className="flex justify-center pt-32">
-        <button
-          className="bg-pink-500 p-3 text-orange-300 rounded-full"
-          onClick={() => {
-            alert("Coming soon....");
-            router.push("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
-            //   setTimeout(
-            //     () => router.push("https://www.youtube.com/watch?v=dQw4w9WgXcQ"),
-            //     3000
-            //   );
-          }}
-        >
-          Click me!
-        </button>
+      </motion.div>
+      <div className="p-2 bg-red-400">Profit: {profit}</div>
+      <div className="flex pt-32">
+        <div className="grid grid-cols-3 gap-2">
+          <Slot symbol={board[0]} pending={isPending}></Slot>
+          <Slot symbol={board[1]} pending={isPending}></Slot>
+          <Slot symbol={board[2]} pending={isPending}></Slot>
+          <Slot symbol={board[3]} pending={isPending}></Slot>
+          <Slot symbol={board[4]} pending={isPending}></Slot>
+          <Slot symbol={board[5]} pending={isPending}></Slot>
+          <Slot symbol={board[6]} pending={isPending}></Slot>
+          <Slot symbol={board[7]} pending={isPending}></Slot>
+          <Slot symbol={board[8]} pending={isPending}></Slot>
+        </div>
+        
       </div>
-    </>
+      <button className="p-2 bg-red-400" onClick={() => mutate()}>
+          Play
+        </button>
+    </div>
   );
 }

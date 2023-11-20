@@ -9,12 +9,19 @@ import { play } from "./higherOrLowerGame";
 //import {z} from ZodAny;
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
+import { slotMachineSpin } from "./slotMachineGame";
 
 export async function playHigherOrLowerAction(
   user_amount: number,
   user_bet: Bet
 ) {
-  const amount = z.number().nonnegative().min(10, "too small bet amount").max(50, "Too big bet amount").multipleOf(10).parse(user_amount); //z.ZodNumber() user_amount;
+  const amount = z
+    .number()
+    .nonnegative()
+    .min(10, "too small bet amount")
+    .max(50, "Too big bet amount")
+    .multipleOf(10)
+    .parse(user_amount); //z.ZodNumber() user_amount;
   const bet = z
     .union([z.literal("higher"), z.literal("equal"), z.literal("lower")])
     .parse(user_bet);
@@ -98,4 +105,38 @@ export async function playHigherOrLowerAction(
     correct_guess: result.correct_bet,
     balance_added: result.balanceAddition,
   };
+}
+
+export async function playSlotMachineAction(user_bet_amount: number) {
+  const bet_amount = z.number().multipleOf(10).min(10).parse(user_bet_amount);
+
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
+    return redirect("/api/auth/signin");
+  }
+
+  const user_balance = await prisma.user.findUnique({
+    select: { rekr_coins: true },
+    where: { id: session?.user.id as string },
+  });
+
+  const newBalance =
+    user_balance && user_balance?.rekr_coins - BigInt(bet_amount);
+  if (newBalance && newBalance < 0) {
+    throw Error("too little currency");
+  }
+
+  const result = slotMachineSpin(bet_amount);
+
+  await prisma.user.update({
+    where: { id: session.user.id as string },
+    data: {
+      rekr_coins: (newBalance as bigint) + BigInt(result.profit),
+    },
+  });
+
+  revalidatePath("/slots");
+
+  return result;
 }
