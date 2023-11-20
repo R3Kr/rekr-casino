@@ -1,14 +1,14 @@
-export type SlotSymbol = ["💩", 0] | ["🍎", 1.2] | ["🌯", 2.5] | ["🤑", 27.5];
+export type SlotSymbol = ["💩", 0] | ["🍎", 1.1] | ["🌯", 2.2] | ["🤑", 15];
 
 function getSlot(): SlotSymbol {
   const rand = Math.random();
   return rand < 0.3
     ? ["💩", 0]
     : rand < 0.7
-    ? ["🍎", 1.2]
+    ? ["🍎", 1.1]
     : rand < 0.9
-    ? ["🌯", 2.5]
-    : ["🤑", 27.5];
+    ? ["🌯", 2.2]
+    : ["🤑", 15];
 }
 
 function getBoard(): SlotSymbol[] {
