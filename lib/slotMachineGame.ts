@@ -1,14 +1,14 @@
-export type SlotSymbol = ["💩", 0] | ["🍎", 1.1] | ["🌯", 2.2] | ["🤑", 20];
+export type SlotSymbol = ["💩", 0] | ["🍎", 2] | ["🌯", 5] | ["🤑", 30];
 
 function getSlot(): SlotSymbol {
   const rand = Math.random();
   return rand < 0.3
     ? ["💩", 0]
     : rand < 0.7
-    ? ["🍎", 1.1]
+    ? ["🍎", 2]
     : rand < 0.9
-    ? ["🌯", 2.2]
-    : ["🤑", 20];
+    ? ["🌯", 5]
+    : ["🤑", 30];
 }
 
 function getBoard(): SlotSymbol[] {
@@ -25,7 +25,7 @@ function getBoard(): SlotSymbol[] {
   return board;
 }
 
-function calculateProfit(betAmount: number, board: SlotSymbol[]) {
+export function calculateProfit(betAmount: number, board: SlotSymbol[]) {
   let profit = 0;
 
   //vertical rows
@@ -33,15 +33,15 @@ function calculateProfit(betAmount: number, board: SlotSymbol[]) {
     profit += betAmount * board[0][1];
   }
   if (board[3][0] === board[4][0] && board[3][0] === board[5][0]) {
-    profit += betAmount * board[0][1];
+    profit += betAmount * board[3][1];
   }
   if (board[6][0] === board[7][0] && board[6][0] === board[8][0]) {
-    profit += betAmount * board[0][1];
+    profit += betAmount * board[6][1];
   }
 
   //diagonal rows
   if (board[2][0] === board[4][0] && board[2][0] === board[6][0]) {
-    profit += betAmount * board[0][1];
+    profit += betAmount * board[2][1];
   }
   if (board[0][0] === board[4][0] && board[0][0] === board[8][0]) {
     profit += betAmount * board[0][1];

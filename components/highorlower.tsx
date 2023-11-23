@@ -4,6 +4,7 @@ import Card from "@/components/Card";
 import { useMutation } from "@tanstack/react-query";
 import { playHigherOrLowerAction } from "@/lib/actions";
 import { Bet } from "@/lib/higherOrLowerGame";
+import { useBalance } from "@/app/providers";
 
 interface Props {
   visible_card: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13;
@@ -12,14 +13,25 @@ interface Props {
 export default function HighOrLower({ visible_card }: Props) {
   let [amount, setAmount] = useState(10);
   let [v_card, setV_card] = useState(visible_card);
+  let {balance, addBalance} = useBalance()
 
   let { data, isPending, mutate } = useMutation({
     mutationFn: (bet: Bet) => playHigherOrLowerAction(amount, bet),
+    onMutate: () => {
+      addBalance(BigInt(-amount))
+    },
+    onError(error, bet, context) {
+      addBalance(BigInt(amount))
+      alert(error)
+    },
     onSettled: (r) =>
       alert(
         r?.won ? `Congratz you won ${r?.balance_added}!` : "Sucks to suck loser"
       ),
-    onSuccess: (r) => setV_card(r.oldHiddenCard),
+    onSuccess: (r) => {
+      setV_card(r.oldHiddenCard)
+      addBalance(BigInt(r.balance_added))
+    },
   });
 
   return (

@@ -10,6 +10,7 @@ import Slot from "@/components/Slot";
 import { SlotSymbol } from "@/lib/slotMachineGame";
 import { useMutation } from "@tanstack/react-query";
 import { playSlotMachineAction } from "@/lib/actions";
+import { useBalance } from "../providers";
 
 const arr: SlotSymbol[0][] = ["💩", "🍎", "🌯", "🤑"];
 
@@ -26,14 +27,20 @@ export default function Page() {
     "💩",
   ]);
   let [profit, setProfit] = useState(0);
+  let {addBalance} = useBalance()
   const { isPending, mutate } = useMutation({
     mutationFn: () => playSlotMachineAction(10),
+    onMutate() {
+      addBalance(BigInt(-10))
+    },
     onError(error, variables, context) {
+      addBalance(BigInt(10))
       alert(error);
     },
     onSuccess(data, variables, context) {
       setBoard(data.board.map((s) => s[0]));
       setProfit(data.profit);
+      addBalance(BigInt(data.profit))
     },
   });
 

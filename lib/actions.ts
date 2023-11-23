@@ -84,7 +84,6 @@ export async function playHigherOrLowerAction(
 
   await Promise.all(db_ops);
 
-  revalidatePath("/higherorlower");
 
   return {
     oldHiddenCard: highorlow.hidden_card as
@@ -136,7 +135,6 @@ export async function playSlotMachineAction(user_bet_amount: number) {
     },
   });
 
-  revalidatePath("/slots");
 
   return result;
 }
