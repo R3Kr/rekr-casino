@@ -25,7 +25,7 @@ export default async function Page() {
   )();
 
   return (
-    <Marquee className="p-2">
+    <Marquee speed={Math.random()} className="p-2">
       <table className="shadow-2xl">
         <tr className="bg-green-700">
           <th className="p-2">Name</th>
@@ -50,7 +50,7 @@ export default async function Page() {
           </tr>
         ))}
       </table>
-      <Test n={Math.random() + 0.11}></Test>
+      
     </Marquee>
   );
 }
