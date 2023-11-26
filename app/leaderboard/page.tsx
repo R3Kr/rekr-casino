@@ -24,7 +24,7 @@ export default async function Page() {
   )();
 
   return (
-    <Marquee speed={Math.random() * 1000}  className="p-2">
+    <Marquee  className="p-2">
       <table className="shadow-2xl">
         <tr className="bg-green-700">
           <th className="p-2">Name</th>
@@ -44,7 +44,7 @@ export default async function Page() {
               {s.daily_claims.length}
             </td>
             <td key={s.name + "referr"} className="p-2">
-              {s.referrals.length}
+              {Math.random()}
             </td>
           </tr>
         ))}
