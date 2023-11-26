@@ -25,7 +25,7 @@ export default async function Page() {
   )();
 
   return (
-    <Marquee speed={Math.random()} className="p-2">
+    <Marquee speed={Math.random()/Math.random()} className="p-2">
       <table className="shadow-2xl">
         <tr className="bg-green-700">
           <th className="p-2">Name</th>

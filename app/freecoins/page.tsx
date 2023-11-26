@@ -42,7 +42,7 @@ export default async function Page() {
 
   return (
     <div className="text-white text-2xl">
-      {daily_claims.length !== 0
+      {claims_today.length !== 0
         ? `Sorry ${session.user.name}, you have already claimed your REKr Coins today`
         : `Here is your 200 daily coins ${session.user.name}`}
     </div>
