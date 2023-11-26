@@ -1,6 +1,7 @@
 import React from "react";
 import prisma from "@/lib/db";
 import { cache } from "react";
+import Marquee from "react-fast-marquee";
 
 interface Score {
   name: string;
@@ -8,14 +9,7 @@ interface Score {
 }
 
 export default async function Page() {
-  const top10: Array<Score> = [
-    { name: "hejsan", score: 32 },
-    { name: "hejsn", score: 322 },
-    { name: "hean", score: 232 },
-    { name: "he22jsan", score: 321 },
-    { name: "hejs213123an", score: 532 },
-    { name: "he1123123123123123jsan", score: 32123123 },
-  ];
+
 
   const users = await cache(() =>
     prisma.user.findMany({
@@ -30,7 +24,7 @@ export default async function Page() {
   )();
 
   return (
-    <div className="p-2">
+    <Marquee className="p-2">
       <table className="shadow-2xl">
         <tr className="bg-green-700">
           <th className="p-2">Name</th>
@@ -55,6 +49,6 @@ export default async function Page() {
           </tr>
         ))}
       </table>
-    </div>
+    </Marquee>
   );
 }
