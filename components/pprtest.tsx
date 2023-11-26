@@ -1,5 +1,7 @@
+"use client"
 import next from "next";
 import React from "react";
+import { useEffect } from "react";
 const asd = () =>
   new Promise((resolve) => {
     setTimeout(resolve, 3000); // 3000 milliseconds = 3 seconds
@@ -17,4 +19,12 @@ export default async function Pprtest() {
     });
 
   return <div>{aprrovedTime}</div>;
+}
+
+export function Test({n}: {n:number}) {
+
+  useEffect(() => {
+    console.log(n)
+  }, [])
+  return <></>
 }

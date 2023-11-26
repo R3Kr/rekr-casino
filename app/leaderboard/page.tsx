@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useEffect } from "react";
 import prisma from "@/lib/db";
 import { cache } from "react";
 import Marquee from "react-fast-marquee";
+import { Test } from "@/components/pprtest";
 
 interface Score {
   name: string;
@@ -24,7 +25,7 @@ export default async function Page() {
   )();
 
   return (
-    <Marquee  className="p-2">
+    <Marquee className="p-2">
       <table className="shadow-2xl">
         <tr className="bg-green-700">
           <th className="p-2">Name</th>
@@ -44,11 +45,14 @@ export default async function Page() {
               {s.daily_claims.length}
             </td>
             <td key={s.name + "referr"} className="p-2">
-              {Math.random()}
+              {s.referrals.length}
             </td>
           </tr>
         ))}
       </table>
+      <Test n={Math.random()}></Test>
     </Marquee>
   );
 }
+
+
