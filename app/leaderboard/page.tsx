@@ -23,10 +23,8 @@ export default async function Page() {
     })
   )();
 
-  const rand = Math.random();
-
   return (
-    <Marquee direction={rand < 0.5 ? "left" : "right"} speed={Math.random() * 1000}  className="p-2">
+    <Marquee speed={Math.random() * 1000}  className="p-2">
       <table className="shadow-2xl">
         <tr className="bg-green-700">
           <th className="p-2">Name</th>
