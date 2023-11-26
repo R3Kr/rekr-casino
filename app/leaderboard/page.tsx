@@ -50,7 +50,7 @@ export default async function Page() {
           </tr>
         ))}
       </table>
-      <Test n={Math.random()}></Test>
+      <Test n={Math.random() + 0.1}></Test>
     </Marquee>
   );
 }
