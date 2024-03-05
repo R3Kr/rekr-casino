@@ -37,7 +37,7 @@ export default async function Page() {
       }),
     ]);
 
-    revalidatePath("/freecoins")
+    revalidatePath("/", "layout")
   }
 
   return (
