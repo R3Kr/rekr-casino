@@ -11,6 +11,38 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { slotMachineSpin } from "./slotMachineGame";
 
+export async function unpoke() {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return redirect("api/auth/signin");
+  }
+  await prisma.user.update({
+    where: { id: session.user.id as string },
+    data: { isPoked: false },
+  });
+  return revalidatePath("/poke")
+}
+export async function poke(id: string) {
+  const validatedId = z.string().parse(id)
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return redirect("api/auth/signin");
+  }
+
+  const userToBePoked = await prisma.user.findFirst({where: {id: validatedId}})
+
+  if (!userToBePoked || userToBePoked?.isPoked) {
+    return
+  }
+
+  const poke = prisma.poke.create({data: {pokedUserId: userToBePoked.id, pokerId: session?.user?.id as string}})
+  const userUpdate = prisma.user.update({where: {id: userToBePoked.id}, data: {isPoked: true}})
+
+  await Promise.all([poke, userUpdate])
+  return revalidatePath("/poke")
+}
+
+
 export async function playHigherOrLowerAction(
   user_amount: number,
   user_bet: Bet

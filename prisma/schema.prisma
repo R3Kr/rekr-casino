@@ -39,17 +39,34 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  rekr_coins    BigInt    @default(1000)
-  high_or_low   HighOrLow?
-  daily_claims  DailyClaim[]
-  referrals     Referral[]
+  id             String       @id @default(cuid())
+  name           String?
+  email          String?      @unique
+  emailVerified  DateTime?
+  image          String?
+  accounts       Account[]
+  sessions       Session[]
+  rekr_coins     BigInt       @default(1000)
+  high_or_low    HighOrLow?
+  daily_claims   DailyClaim[]
+  referrals      Referral[]
+  poker_for_poke Poke[]       @relation("poker")
+  poked_for_poke Poke[]       @relation("poked")
+  isPoked        Boolean      @default(false)
+}
+
+model Poke {
+  id          String   @id @default(cuid())
+  date        DateTime @default(now())
+  pokerId     String
+  pokedUserId String
+
+  poker User @relation(name: "poker", fields: [pokerId], references: [id], onDelete: Cascade)
+
+  poked User @relation(name: "poked", fields: [pokedUserId], references: [id], onDelete: Cascade)
+
+  @@index([pokerId])
+  @@index([pokedUserId])
 }
 
 model VerificationToken {
@@ -65,34 +82,30 @@ model HighOrLow {
   visible_card Int
   hidden_card  Int
 
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
 
 model DailyClaim {
-  id    String    @id @default(cuid())
-  date  DateTime  @default(now())
+  id     String   @id @default(cuid())
+  date   DateTime @default(now())
   userId String
 
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
 
 model Referral {
-  id    String    @id @default(cuid())
-  userId String
+  id           String       @id @default(cuid())
+  userId       String
   referralType ReferralType
 
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
-
-
 
 enum ReferralType {
   GITHUB_FOLLOW

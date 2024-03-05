@@ -2,6 +2,7 @@ import Image from "next/image";
 import Pprtest from "@/components/pprtest";
 import { Suspense } from "react";
 import Link from "next/link";
+import Poked from "@/components/Poked";
 
 export default function Home() {
   return (
@@ -16,6 +17,9 @@ export default function Home() {
           <Link href="/buycoins" className="bg-purple-300 h-32 flex justify-center items-center text-4xl text-white p-2">Buy coins!</Link>
         </div>
       </div>
+      <Suspense>
+        <Poked></Poked>
+      </Suspense>
     </>
   );
 }
