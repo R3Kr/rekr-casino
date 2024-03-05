@@ -8,6 +8,14 @@ export default async function PokePeople() {
   const session = await getServerSession(authOptions);
   const peopleToBePoked = await prisma.user.findMany({
     where: { isPoked: false, NOT: { id: session?.user?.id || "" } },
+    select: {
+      id: true,
+      name: true,
+      image: true,
+      poked_for_poke: {
+        where: { pokerId: session?.user?.id as string | undefined },
+      },
+    },
   });
 
   return (
@@ -18,6 +26,7 @@ export default async function PokePeople() {
           id={p.id}
           name={p.name}
           image={p.image}
+          timesPoked={p.poked_for_poke.length}
         ></PokePerson>
       ))}
     </>

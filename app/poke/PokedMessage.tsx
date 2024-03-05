@@ -4,30 +4,35 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import React from "react";
 import Image from "next/image";
-import { unpoke } from "@/lib/actions";
-import Unpoke from "./Unpoke";
-export default async function PokedMessage() {
-  const user = await getServerSession(authOptions);
 
-  if (!user) {
+
+export default async function PokedMessage() {
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
     return redirect("/api/auth/signin");
   }
 
   const prismaUser = await prisma.user.findFirst({
-    where: { id: user.user.id as string },
+    where: { id: session.user.id as string },
   });
 
   if (!prismaUser?.isPoked) {
     return <>You are not poked, for now...</>;
   }
 
-  const poker = await prisma.poke.findFirst({
-    where: { pokedUserId: user?.user?.id as string },
+  const pokerPromse =  prisma.poke.findFirst({
+    where: { pokedUserId: session?.user?.id as string },
     orderBy: { date: "desc" },
     include: { poker: true },
   });
 
+  const updatePromise =  prisma.user.update({
+    where: { id: session.user.id as string },
+    data: { isPoked: false },
+  });
   
+  const [poker] = await Promise.all([pokerPromse, updatePromise])
 
   return (
     <>
@@ -45,7 +50,7 @@ export default async function PokedMessage() {
           )}
         </>
       )}
-      <Unpoke/>
+      {/* <Unpoke/> */}
     </>
   );
 }
