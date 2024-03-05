@@ -5,6 +5,7 @@ import React from "react";
 import prisma from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
+
 export default async function Page() {
   const session = await getServerSession(authOptions);
 
@@ -36,8 +37,8 @@ export default async function Page() {
         },
       }),
     ]);
+    revalidatePath("/", "layout")
 
-    revalidatePath("/freecoins")
   }
 
   return (
