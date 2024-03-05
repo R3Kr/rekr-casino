@@ -13,34 +13,34 @@ interface Props {
 export default function HighOrLower({ visible_card }: Props) {
   let [amount, setAmount] = useState(10);
   let [v_card, setV_card] = useState(visible_card);
-  let {balance, addBalance} = useBalance()
+  let { balance, addBalance } = useBalance();
 
   let { data, isPending, mutate } = useMutation({
     mutationFn: (bet: Bet) => playHigherOrLowerAction(amount, bet),
     onMutate: () => {
-      addBalance(BigInt(-amount))
+      addBalance(BigInt(-amount));
     },
     onError(error, bet, context) {
-      addBalance(BigInt(amount))
-      alert(error)
+      addBalance(BigInt(amount));
+      alert(error);
     },
     onSettled: (r) =>
       alert(
         r?.won ? `Congratz you won ${r?.balance_added}!` : "Sucks to suck loser"
       ),
     onSuccess: (r) => {
-      setV_card(r.oldHiddenCard)
-      addBalance(BigInt(r.balance_added))
+      setV_card(r.oldHiddenCard);
+      addBalance(BigInt(r.balance_added));
     },
   });
 
   return (
     <div className="p-2">
-      <div className="flex gap-2 flex-col bg-slate-200 h-80 justify-center items-center divide-y">
+      <div className="flex gap-2 flex-col bg-slate-200 h-full p-5 justify-center items-center divide-y text-2xl">
         <h1>Will the ? be higher or lower? 🤔</h1>
         <Card value={v_card}></Card>
         <Card></Card>
-        <div className="flex gap-2">
+        <div className="flex gap-6">
           <button
             disabled={isPending || v_card === 13}
             onClick={() => mutate("higher")}
@@ -64,7 +64,7 @@ export default function HighOrLower({ visible_card }: Props) {
           </button>
         </div>
         What to bet??
-        <div className="flex flex-row gap-2">
+        <div className="flex flex-row gap-4 p-4">
           <button
             className={`${
               amount === 10
@@ -77,7 +77,9 @@ export default function HighOrLower({ visible_card }: Props) {
           </button>
           <button
             className={`${
-              amount === 20 ? " outline outline-green-500  outline-offset-1" : ""
+              amount === 20
+                ? " outline outline-green-500  outline-offset-1"
+                : ""
             } bg-slate-500  p-2`}
             onClick={() => setAmount(20)}
           >
@@ -85,7 +87,9 @@ export default function HighOrLower({ visible_card }: Props) {
           </button>
           <button
             className={`${
-              amount === 30 ? " outline outline-green-500  outline-offset-1" : ""
+              amount === 30
+                ? " outline outline-green-500  outline-offset-1"
+                : ""
             } bg-slate-500  p-2 `}
             onClick={() => setAmount(30)}
           >

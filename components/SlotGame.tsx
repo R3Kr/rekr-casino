@@ -50,7 +50,7 @@ export default function SlotGame() {
       <motion.div
         animate={{ x: [0, 100, 0] }}
         transition={{ ease: "easeOut", duration: 2 }}
-        className="text-7xl text-cyan-300 p-2"
+        className="md:text-5xl text-cyan-300 p-2"
       >
         Welcome to the slotmachine! Time to spin away!
       </motion.div>
