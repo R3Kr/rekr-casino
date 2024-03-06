@@ -6,7 +6,7 @@ import {
   handleClick,
   MineBoard,
   PlayerBoard,
-  placeFlag
+  placeFlag,
 } from "@/lib/minesweeper";
 import React, { useMemo, useState } from "react";
 import { number } from "zod";
@@ -86,10 +86,11 @@ export default function Minesweeper({ mines }: Props) {
         playerBoard.board.map((b, i) => {
           return { b, i };
         })
-      ).map((row) => (
-        <div className="flex">
+      ).map((row, i) => (
+        <div key={i} className="flex">
           {row.map((b) => (
             <div
+              key={b.i}
               style={{
                 width: gridSize,
                 height: gridSize,
