@@ -1,5 +1,7 @@
+import { boolean } from "zod";
+
 type Mine = boolean;
-type PlayerBox = number | "?" | "⛳️" | "☠️";
+type PlayerBox = number | "?" | "⛳️" | "☠️" | "⁉️";
 
 export type MineBoard = {
   readonly width: number;
@@ -10,7 +12,6 @@ export type PlayerBoard = {
   readonly width: number;
   readonly height: number;
   readonly board: PlayerBox[];
-  lost?: { readonly mine: number };
 };
 
 export const genBombs = (x: number, y: number, bombs: number) => {
@@ -45,10 +46,31 @@ export const genPlayerBoard = ({ width, height }: MineBoard) => {
   };
 };
 
-export type ClickResult = "ok" | GameOver;
-type GameOver = {
-  readonly mine: number;
+export const boxesToClickFromMiddleMouse = (
+  clickIndex: number,
+  playerBoard: PlayerBoard,
+  mineboard: MineBoard
+) => {
+  if (typeof playerBoard.board[clickIndex] !== "number") {
+    return [];
+  }
+  const adjSquares = adjecentSquares(clickIndex, mineboard);
+
+  const adjecentFlags = adjSquares.filter(
+    (val) => playerBoard.board[val] === "⛳️"
+  ).length;
+  if ((playerBoard.board[clickIndex] as number) <= adjecentFlags) {
+    return adjSquares
+      .filter((val) => playerBoard.board[val] !== "⛳️")
+  }
+
 };
+
+export type ClickResult = {
+  readonly gameOver?: "won" | "lost";
+  readonly mine?: number;
+};
+
 export const handleClick = (
   clickIndex: number,
   playerBoard: PlayerBoard,
@@ -60,14 +82,29 @@ export const handleClick = (
   if (playerBoard.board[clickIndex] === 0) {
     clickSurrounding(clickIndex, playerBoard, mineboard);
   }
-  const res: ClickResult =
-    playerBoard.board[clickIndex] === "☠️" ? { mine: clickIndex } : "ok";
+  const hasWon = mineboard.board.filter(m => m === false).length === playerBoard.board.filter(b => typeof b === "number").length
+  const res: ClickResult = playerBoard.board[clickIndex] === "☠️" ? { gameOver: "lost", mine: clickIndex } : hasWon ? {gameOver: "won"} : {};
   return res;
 };
 
-export const placeFlag = (clickIndex: number, playerBoard: PlayerBoard) => {
+export const revealPlayerBoard = (
+  playerBoard: PlayerBoard,
+  mineboard: MineBoard
+) => {
+  for (let i = 0; i < playerBoard.board.length; i++) {
+    if (mineboard.board[i]) {
+      playerBoard.board[i] = "☠️";
+    } else if (playerBoard.board[i] === "⛳️") {
+      playerBoard.board[i] = "⁉️";
+    }
+  }
+};
+
+export const toggleFlag = (clickIndex: number, playerBoard: PlayerBoard) => {
   if (playerBoard.board[clickIndex] === "?") {
     playerBoard.board[clickIndex] = "⛳️";
+  } else if (playerBoard.board[clickIndex] === "⛳️") {
+    playerBoard.board[clickIndex] = "?";
   }
 };
 

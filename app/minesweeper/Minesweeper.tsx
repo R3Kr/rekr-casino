@@ -1,15 +1,16 @@
 "use client";
 import {
   ClickResult,
-  genBombs,
   genPlayerBoard,
   handleClick,
+  boxesToClickFromMiddleMouse,
   MineBoard,
   PlayerBoard,
-  placeFlag,
+  revealPlayerBoard,
+  toggleFlag,
 } from "@/lib/minesweeper";
-import React, { useMemo, useState } from "react";
-import { number } from "zod";
+import React, { useEffect, useState } from "react";
+
 
 interface Props {
   mines: MineBoard;
@@ -54,6 +55,8 @@ const getColor = (text: string): string => {
       return "#000000"; // Black
     case "8":
       return "#7B7B7B"; // Gray
+    case "?":
+      return "#FFFFFF";
     default:
       return "#000000"; // Default color if no match
   }
@@ -62,12 +65,15 @@ const getColor = (text: string): string => {
 // const placeFlag = (box: number, playerBoard: PlayerBoard) => {};
 export default function Minesweeper({ mines }: Props) {
   const [playerBoard, setPlayerBoard] = useState(genPlayerBoard(mines));
-  const [clickResult, setClickResult] = useState<ClickResult>("ok");
+  const [{gameOver, mine: gameOverMine}, setClickResult] = useState<ClickResult>({});
   const [gridSize, setGridSize] = useState(50);
 
-  const gameOver = useMemo<boolean>(() => {
-    return clickResult !== "ok";
-  }, [clickResult]);
+  useEffect(() => {
+    if (gameOver === "lost") {
+      revealPlayerBoard(playerBoard, mines)
+      setPlayerBoard({...playerBoard})
+    }
+  }, [gameOver])
 
   return (
     <div>
@@ -80,11 +86,11 @@ export default function Minesweeper({ mines }: Props) {
           setGridSize(e.target.valueAsNumber);
         }}
       ></input>
-      {gameOver && <div className="text-5xl">Game over loser</div>}
+      {gameOver && <div className="text-5xl">{gameOver === "lost" ? "Game over loser" : "Congratulations you won!!🥳"}</div>}
       {partitionBoard(
         playerBoard.width,
         playerBoard.board.map((b, i) => {
-          return { b, i };
+          return { box: b, i };
         })
       ).map((row, i) => (
         <div key={i} className="flex">
@@ -94,20 +100,26 @@ export default function Minesweeper({ mines }: Props) {
               style={{
                 width: gridSize,
                 height: gridSize,
-                color: getColor(b.b.toString()),
+                color: getColor(b.box.toString()),
               }}
-              className={`p-2 border-2 border-gray-600 flex justify-center items-center select-none`}
+              className={`p-2 border-2 border-gray-600 flex justify-center items-center select-none ${gameOverMine === b.i && "bg-red-500"}`}
               onClick={() =>
                 !gameOver &&
+                b.box !== "⛳️" &&
                 onClick(b.i, playerBoard, setPlayerBoard, mines, setClickResult)
               }
               onContextMenu={(event) => {
                 event.preventDefault();
-                placeFlag(b.i, playerBoard);
-                setPlayerBoard({ ...playerBoard });
+                if (typeof b.box === "number") {
+                  boxesToClickFromMiddleMouse(b.i, playerBoard, mines)?.forEach(box => onClick(box, playerBoard, setPlayerBoard, mines, setClickResult))
+                  setPlayerBoard({...playerBoard})
+                } else {
+                  toggleFlag(b.i, playerBoard);
+                  setPlayerBoard({ ...playerBoard });
+                }
               }}
             >
-              {b.b === 0 ? " " : b.b}
+              {b.box === 0 ? " " : b.box}
             </div>
           ))}
         </div>
