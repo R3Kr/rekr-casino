@@ -39,20 +39,77 @@ model Session {
 }
 
 model User {
-  id             String       @id @default(cuid())
-  name           String?
-  email          String?      @unique
-  emailVerified  DateTime?
-  image          String?
-  accounts       Account[]
-  sessions       Session[]
-  rekr_coins     BigInt       @default(1000)
-  high_or_low    HighOrLow?
-  daily_claims   DailyClaim[]
-  referrals      Referral[]
-  poker_for_poke Poke[]       @relation("poker")
-  poked_for_poke Poke[]       @relation("poked")
-  isPoked        Boolean      @default(false)
+  id                String                   @id @default(cuid())
+  name              String?
+  email             String?                  @unique
+  emailVerified     DateTime?
+  image             String?
+  accounts          Account[]
+  sessions          Session[]
+  rekr_coins        BigInt                   @default(1000)
+  high_or_low       HighOrLow?
+  daily_claims      DailyClaim[]
+  referrals         Referral[]
+  poker_for_poke    Poke[]                   @relation("poker")
+  poked_for_poke    Poke[]                   @relation("poked")
+  isPoked           Boolean                  @default(false)
+  minesweeperBoards PlayerMineSweeperBoard[]
+}
+
+model PlayerMineSweeperBoard {
+  id          String           @id @default(cuid())
+  date        DateTime         @default(now())
+  gameOver    GameOver?
+  mineBoardId String
+  playerId    String
+  mineBoard   MineSweeperBoard @relation(fields: [mineBoardId], references: [id], onDelete: Cascade)
+  player      User             @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  boxes       PlayerBox[]
+
+  @@index([mineBoardId])
+  @@index([playerId])
+}
+
+enum GameOver {
+  WON
+  LOST
+}
+
+model PlayerBox {
+  id            String                 @id @default(cuid())
+  boxState      PlayerBoxState         @default(NOTCLICKED)
+  mineId        String
+  playerBoardId String
+  mine          Mine                   @relation(fields: [mineId], references: [id], onDelete: Cascade)
+  playerBoard   PlayerMineSweeperBoard @relation(fields: [playerBoardId], references: [id], onDelete: Cascade)
+
+  @@index([mineId])
+  @@index([playerBoardId])
+}
+
+enum PlayerBoxState {
+  CLICKED
+  FLAGGED
+  NOTCLICKED
+}
+
+model MineSweeperBoard {
+  id           String                   @id @default(cuid())
+  width        Int
+  height       Int
+  mines        Mine[]
+  playerBoards PlayerMineSweeperBoard[]
+}
+
+model Mine {
+  id          String           @id @default(cuid())
+  index       Int
+  isMine      Boolean
+  boardId     String
+  board       MineSweeperBoard @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  playerBoxes PlayerBox[]
+
+  @@index([boardId])
 }
 
 model Poke {

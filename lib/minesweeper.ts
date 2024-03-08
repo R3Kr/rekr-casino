@@ -61,7 +61,7 @@ export const boxesToClickFromMiddleMouse = (
   ).length;
   if ((playerBoard.board[clickIndex] as number) <= adjecentFlags) {
     return adjSquares
-      .filter((val) => playerBoard.board[val] !== "⛳️")
+      .filter((val) => playerBoard.board[val] === "?")
   }
 
 };
@@ -86,6 +86,18 @@ export const handleClick = (
   const res: ClickResult = playerBoard.board[clickIndex] === "☠️" ? { gameOver: "lost", mine: clickIndex } : hasWon ? {gameOver: "won"} : {};
   return res;
 };
+
+export const handleClicks = (clickIndices: Array<number>, playerBoard: PlayerBoard, mineboard: MineBoard) => {
+  let result: ClickResult = {};
+  for (let i = 0; i < clickIndices.length; i++) {
+    const index = clickIndices[i];
+    result = handleClick(index, playerBoard, mineboard);
+    if (result.gameOver === "lost") {
+      return result
+    }
+  }
+  return result;
+}
 
 export const revealPlayerBoard = (
   playerBoard: PlayerBoard,

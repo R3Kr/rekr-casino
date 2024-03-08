@@ -8,9 +8,58 @@ import {
   PlayerBoard,
   revealPlayerBoard,
   toggleFlag,
+  genBombs,
 } from "@/lib/minesweeper";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
+export default function Minesweeper() {
+  const [shouldPlay, setShouldPlay] = useState(false);
+  const widthInput = useRef<HTMLInputElement>(null);
+  const heightInput = useRef<HTMLInputElement>(null);
+  const minesInput = useRef<HTMLInputElement>(null);
+
+  if (shouldPlay) {
+    return (
+      <MinesweeperGame
+        mines={genBombs(
+          widthInput?.current?.valueAsNumber!,
+          heightInput?.current?.valueAsNumber!,
+          minesInput?.current?.valueAsNumber!
+        )}
+      />
+    );
+  }
+
+  return (
+    <div className="flex flex-col">
+      <label>Width: </label>
+      <input
+        defaultValue={5}
+        className="text-black"
+        type="number"
+        ref={widthInput}
+      ></input>
+      <label>Height: </label>
+      <input
+        defaultValue={5}
+        className="text-black"
+        type="number"
+        ref={heightInput}
+      ></input>
+      <label>Mines: </label>
+      <input
+        defaultValue={5}
+        className="text-black"
+        type="number"
+        ref={minesInput}
+      ></input>
+      <div>
+
+      <button className="p-2 bg-blue-200" onClick={() => setShouldPlay(true)}>Play</button>
+      </div>
+    </div>
+  );
+}
 
 interface Props {
   mines: MineBoard;
@@ -63,17 +112,18 @@ const getColor = (text: string): string => {
 };
 
 // const placeFlag = (box: number, playerBoard: PlayerBoard) => {};
-export default function Minesweeper({ mines }: Props) {
+function MinesweeperGame({ mines }: Props) {
   const [playerBoard, setPlayerBoard] = useState(genPlayerBoard(mines));
-  const [{gameOver, mine: gameOverMine}, setClickResult] = useState<ClickResult>({});
+  const [{ gameOver, mine: gameOverMine }, setClickResult] =
+    useState<ClickResult>({});
   const [gridSize, setGridSize] = useState(50);
 
   useEffect(() => {
     if (gameOver === "lost") {
-      revealPlayerBoard(playerBoard, mines)
-      setPlayerBoard({...playerBoard})
+      revealPlayerBoard(playerBoard, mines);
+      setPlayerBoard({ ...playerBoard });
     }
-  }, [gameOver])
+  }, [gameOver]);
 
   return (
     <div>
@@ -86,7 +136,13 @@ export default function Minesweeper({ mines }: Props) {
           setGridSize(e.target.valueAsNumber);
         }}
       ></input>
-      {gameOver && <div className="text-5xl">{gameOver === "lost" ? "Game over loser" : "Congratulations you won!!🥳"}</div>}
+      {gameOver && (
+        <div className="text-5xl">
+          {gameOver === "lost"
+            ? "Game over loser"
+            : "Congratulations you won!!🥳"}
+        </div>
+      )}
       {partitionBoard(
         playerBoard.width,
         playerBoard.board.map((b, i) => {
@@ -102,7 +158,9 @@ export default function Minesweeper({ mines }: Props) {
                 height: gridSize,
                 color: getColor(b.box.toString()),
               }}
-              className={`p-2 border-2 border-gray-600 flex justify-center items-center select-none ${gameOverMine === b.i && "bg-red-500"}`}
+              className={`p-2 border-2 border-gray-600 flex justify-center items-center select-none ${
+                gameOverMine === b.i && "bg-red-500"
+              }`}
               onClick={() =>
                 !gameOver &&
                 b.box !== "⛳️" &&
@@ -111,8 +169,17 @@ export default function Minesweeper({ mines }: Props) {
               onContextMenu={(event) => {
                 event.preventDefault();
                 if (typeof b.box === "number") {
-                  boxesToClickFromMiddleMouse(b.i, playerBoard, mines)?.forEach(box => onClick(box, playerBoard, setPlayerBoard, mines, setClickResult))
-                  setPlayerBoard({...playerBoard})
+                  boxesToClickFromMiddleMouse(b.i, playerBoard, mines)?.forEach(
+                    (box) =>
+                      onClick(
+                        box,
+                        playerBoard,
+                        setPlayerBoard,
+                        mines,
+                        setClickResult
+                      )
+                  );
+                  setPlayerBoard({ ...playerBoard });
                 } else {
                   toggleFlag(b.i, playerBoard);
                   setPlayerBoard({ ...playerBoard });
