@@ -9,22 +9,23 @@ import {
   revealPlayerBoard,
   toggleFlag,
   genBombs,
+  DefaultPlayerBoard,
 } from "@/lib/minesweeper";
-import React, { useEffect, useRef, useState } from "react";
+import React, { ElementRef, useEffect, useRef, useState } from "react";
 
 export default function Minesweeper() {
   const [shouldPlay, setShouldPlay] = useState(false);
-  const widthInput = useRef<HTMLInputElement>(null);
-  const heightInput = useRef<HTMLInputElement>(null);
-  const minesInput = useRef<HTMLInputElement>(null);
+  const widthInput = useRef<ElementRef<"input">>(null);
+  const heightInput = useRef<ElementRef<"input">>(null);
+  const minesInput = useRef<ElementRef<"input">>(null);
 
-  if (shouldPlay) {
+  if (true) {
     return (
       <MinesweeperGame
-        mines={genBombs(
-          widthInput?.current?.valueAsNumber!,
-          heightInput?.current?.valueAsNumber!,
-          minesInput?.current?.valueAsNumber!
+        board={new DefaultPlayerBoard(
+          30, //widthInput?.current?.valueAsNumber!,
+          16, //heightInput?.current?.valueAsNumber!,
+          99 //minesInput?.current?.valueAsNumber!
         )}
       />
     );
@@ -54,24 +55,25 @@ export default function Minesweeper() {
         ref={minesInput}
       ></input>
       <div>
-
-      <button className="p-2 bg-blue-200" onClick={() => setShouldPlay(true)}>Play</button>
+        <button className="p-2 bg-blue-200" onClick={() => setShouldPlay(true)}>
+          Play
+        </button>
       </div>
     </div>
   );
 }
 
 interface Props {
-  mines: MineBoard;
+  board: PlayerBoard;
 }
 
-function partitionBoard<T>(width: number, array: T[]) {
+function partitionBoard<T>(width: number, height: number, array: T[]) {
   return array.reduce<T[][]>(
     (acc, item, index) => {
-      acc[Math.floor(index / width)].push(item);
+      acc[Math.floor(index / height)].push(item);
       return acc;
     },
-    [...new Array(width)].map<T[]>((_) => [])
+    [...new Array(height)].map<T[]>((_) => [])
   );
 }
 
@@ -79,10 +81,9 @@ const onClick = (
   box: number,
   board: PlayerBoard,
   setBoard: (b: PlayerBoard) => void,
-  mines: MineBoard,
   setClickResult: (gg: ClickResult) => void
 ) => {
-  setClickResult(handleClick(box, board, mines));
+  setClickResult(board.click(box));
   setBoard({ ...board });
 };
 
@@ -112,15 +113,15 @@ const getColor = (text: string): string => {
 };
 
 // const placeFlag = (box: number, playerBoard: PlayerBoard) => {};
-function MinesweeperGame({ mines }: Props) {
-  const [playerBoard, setPlayerBoard] = useState(genPlayerBoard(mines));
+function MinesweeperGame({ board }: Props) {
+  const [playerBoard, setPlayerBoard] = useState(board);
   const [{ gameOver, mine: gameOverMine }, setClickResult] =
     useState<ClickResult>({});
   const [gridSize, setGridSize] = useState(50);
 
   useEffect(() => {
     if (gameOver === "lost") {
-      revealPlayerBoard(playerBoard, mines);
+      revealPlayerBoard(playerBoard, board.mines);
       setPlayerBoard({ ...playerBoard });
     }
   }, [gameOver]);
@@ -135,62 +136,54 @@ function MinesweeperGame({ mines }: Props) {
         onChange={(e) => {
           setGridSize(e.target.valueAsNumber);
         }}
-      ></input>
+      />
       {gameOver && (
         <div className="text-5xl">
           {gameOver === "lost"
-            ? "Game over loser"
-            : "Congratulations you won!!🥳"}
+            ? "Game over, loser"
+            : "Congratulations, you won!!🥳"}
         </div>
       )}
-      {partitionBoard(
-        playerBoard.width,
-        playerBoard.board.map((b, i) => {
-          return { box: b, i };
-        })
-      ).map((row, i) => (
-        <div key={i} className="flex">
-          {row.map((b) => (
-            <div
-              key={b.i}
-              style={{
-                width: gridSize,
-                height: gridSize,
-                color: getColor(b.box.toString()),
-              }}
-              className={`p-2 border-2 border-gray-600 flex justify-center items-center select-none ${
-                gameOverMine === b.i && "bg-red-500"
-              }`}
-              onClick={() =>
-                !gameOver &&
-                b.box !== "⛳️" &&
-                onClick(b.i, playerBoard, setPlayerBoard, mines, setClickResult)
+      <div style={{width: `${gridSize * playerBoard.width}px`, gridTemplateColumns: `repeat(${playerBoard.width}, minmax(0, 1fr))`}}className={`grid`}>
+        {playerBoard.board.map((b, i) => (
+          <div
+            key={i}
+            style={{
+              width: `${gridSize}px`,
+              height: `${gridSize}px`,
+              color: getColor(b.toString()),
+            }}
+            className={`p-2 border-2 border-gray-600 flex justify-center items-center select-none ${b === "?" ? "bg-amber-100" : "bg-amber-50"} ${
+              gameOverMine === i ? "bg-red-500" : ""
+            }`}
+            onClick={() => {
+              if (!gameOver && b !== "⛳️") {
+                onClick(i, playerBoard, setPlayerBoard, setClickResult);
               }
-              onContextMenu={(event) => {
-                event.preventDefault();
-                if (typeof b.box === "number") {
-                  boxesToClickFromMiddleMouse(b.i, playerBoard, mines)?.forEach(
-                    (box) =>
-                      onClick(
-                        box,
-                        playerBoard,
-                        setPlayerBoard,
-                        mines,
-                        setClickResult
-                      )
-                  );
-                  setPlayerBoard({ ...playerBoard });
-                } else {
-                  toggleFlag(b.i, playerBoard);
-                  setPlayerBoard({ ...playerBoard });
-                }
-              }}
-            >
-              {b.box === 0 ? " " : b.box}
-            </div>
-          ))}
-        </div>
-      ))}
+              console.log({ b, i });
+            }}
+            onContextMenu={(event) => {
+              event.preventDefault();
+              if (typeof b === "number") {
+                boxesToClickFromMiddleMouse(i, playerBoard, board.mines)?.forEach(
+                  (box) =>
+                    onClick(
+                      box,
+                      playerBoard,
+                      setPlayerBoard,
+                      setClickResult
+                    )
+                );
+              } else {
+                toggleFlag(i, playerBoard);
+              }
+              setPlayerBoard({ ...playerBoard });
+            }}
+          >
+            {b === 0 || b === "?" ? " " : b}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

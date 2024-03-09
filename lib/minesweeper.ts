@@ -12,15 +12,56 @@ export type PlayerBoard = {
   readonly width: number;
   readonly height: number;
   readonly board: PlayerBox[];
+  readonly mines: MineBoard;
+  readonly click: (clickIndex: number) => ClickResult;
 };
 
-export const genBombs = (x: number, y: number, bombs: number) => {
+export class DefaultPlayerBoard implements PlayerBoard {
+  width: number;
+  height: number;
+  board: PlayerBox[];
+  mineCount: number;
+  mines: MineBoard;
+
+  constructor(width: number, height: number, mineCount: number) {
+    this.width = width;
+    this.height = height;
+    this.board = new Array(width * height).fill("?");
+    this.mines = {
+      width,
+      height,
+      board: new Array(width * height).fill(false),
+    };
+    this.mineCount = mineCount;
+  }
+
+  click(clickIndex: number): ClickResult {
+    const safeZone = [...adjecentSquares(clickIndex, this), clickIndex]
+
+    this.mines = genBombs(this.width, this.height, this.mineCount, safeZone);
+    this.click = this.handleClickPostFirstClick;
+    return this.click(clickIndex)
+  }
+  handleClickPostFirstClick(clickIndex: number) {
+    return handleClick(clickIndex, this, this.mines);
+  }
+}
+
+export const genBombs = (
+  x: number,
+  y: number,
+  bombs: number,
+  indicesToExclude?: number[]
+) => {
   const size = x * y;
   const board = new Array<Mine>(size).fill(false);
 
   let bombsPlaced = 0;
   for (let i = 0; bombsPlaced < bombs; i = (i + 1) % size) {
     if (board[i]) {
+      continue;
+    }
+    if (indicesToExclude?.includes(i)) {
       continue;
     }
     if (Math.random() < 0.001) {
@@ -60,10 +101,8 @@ export const boxesToClickFromMiddleMouse = (
     (val) => playerBoard.board[val] === "⛳️"
   ).length;
   if ((playerBoard.board[clickIndex] as number) <= adjecentFlags) {
-    return adjSquares
-      .filter((val) => playerBoard.board[val] === "?")
+    return adjSquares.filter((val) => playerBoard.board[val] === "?");
   }
-
 };
 
 export type ClickResult = {
@@ -82,22 +121,33 @@ export const handleClick = (
   if (playerBoard.board[clickIndex] === 0) {
     clickSurrounding(clickIndex, playerBoard, mineboard);
   }
-  const hasWon = mineboard.board.filter(m => m === false).length === playerBoard.board.filter(b => typeof b === "number").length
-  const res: ClickResult = playerBoard.board[clickIndex] === "☠️" ? { gameOver: "lost", mine: clickIndex } : hasWon ? {gameOver: "won"} : {};
+  const hasWon =
+    mineboard.board.filter((m) => m === false).length ===
+    playerBoard.board.filter((b) => typeof b === "number").length;
+  const res: ClickResult =
+    playerBoard.board[clickIndex] === "☠️"
+      ? { gameOver: "lost", mine: clickIndex }
+      : hasWon
+      ? { gameOver: "won" }
+      : {};
   return res;
 };
 
-export const handleClicks = (clickIndices: Array<number>, playerBoard: PlayerBoard, mineboard: MineBoard) => {
+export const handleClicks = (
+  clickIndices: Array<number>,
+  playerBoard: PlayerBoard,
+  mineboard: MineBoard
+) => {
   let result: ClickResult = {};
   for (let i = 0; i < clickIndices.length; i++) {
     const index = clickIndices[i];
     result = handleClick(index, playerBoard, mineboard);
     if (result.gameOver === "lost") {
-      return result
+      return result;
     }
   }
   return result;
-}
+};
 
 export const revealPlayerBoard = (
   playerBoard: PlayerBoard,
@@ -130,7 +180,7 @@ const clickSurrounding = (
     .forEach((num) => handleClick(num, playerBoard, mineboard));
 };
 
-const adjecentSquares = (box: number, { width, height, board }: MineBoard) => {
+const adjecentSquares = (box: number, { width, height, board }: MineBoard | PlayerBoard) => {
   const adjecentSquares: number[] = [];
 
   //left
@@ -143,33 +193,33 @@ const adjecentSquares = (box: number, { width, height, board }: MineBoard) => {
   }
 
   //down
-  if (box + height < board.length) {
-    adjecentSquares.push(box + height);
+  if (box + width < board.length) {
+    adjecentSquares.push(box + width);
   }
 
   //up
-  if (box - height >= 0) {
-    adjecentSquares.push(box - height);
+  if (box - width >= 0) {
+    adjecentSquares.push(box - width);
   }
 
   //leftDown
-  if (box + height < board.length && box % width !== 0) {
-    adjecentSquares.push(box - 1 + height);
+  if (box + width < board.length && box % width !== 0) {
+    adjecentSquares.push(box - 1 + width);
   }
 
   //rightDown
-  if ((box + 1) % width !== 0 && box + height < board.length) {
-    adjecentSquares.push(box + 1 + height);
+  if ((box + 1) % width !== 0 && box + width < board.length) {
+    adjecentSquares.push(box + 1 + width);
   }
 
   //leftUp
-  if (box % width !== 0 && box - height >= 0) {
-    adjecentSquares.push(box - 1 - height);
+  if (box % width !== 0 && box - width >= 0) {
+    adjecentSquares.push(box - 1 - width);
   }
 
   //rightUp
-  if ((box + 1) % width !== 0 && box - height >= 0) {
-    adjecentSquares.push(box + 1 - height);
+  if ((box + 1) % width !== 0 && box - width >= 0) {
+    adjecentSquares.push(box + 1 - width);
   }
 
   return adjecentSquares;
