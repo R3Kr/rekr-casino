@@ -199,7 +199,7 @@ function MinesweeperGame({ board, prevClickResult}: Props) {
       setPlayerBoard((prev) => {
         return {
           ...data,
-          board: data.board.map((box, i) => flagIndecis.includes(i) ? "⛳️" : box ),
+          board: data.board.map((box, i) => flagIndecis[i] ? "⛳️" : box ),
           click(clickIndex) {
             return handleClick(clickIndex, prev, prev.mines);
           },
