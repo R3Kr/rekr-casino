@@ -181,10 +181,9 @@ function MinesweeperGame({ board, prevClickResult}: Props) {
 
   useEffect(() => {
     if (gameOver === "lost") {
-      revealPlayerBoard(playerBoard, board.mines);
+      revealPlayerBoard(playerBoard, playerBoard.mines);
       setPlayerBoard({ ...playerBoard });
     }
-    console.log(board);
   }, [gameOver]);
 
   useEffect(() => {
@@ -195,7 +194,6 @@ function MinesweeperGame({ board, prevClickResult}: Props) {
     mutationKey: ["board"],
     mutationFn: (boxesToClick: number[]) => playerBoard.board.find(b => typeof b === "number") === undefined ?  generateBoardAction({width: playerBoard.width, height: playerBoard.height, mines: playerBoard.mines.mineCount, firstClick: boxesToClick[0]}) : clickAction(boxesToClick),
     onSuccess(data, variables, context) {
-      setClickResult(data.clickResult)
       setPlayerBoard((prev) => {
         return {
           ...data,
@@ -203,7 +201,7 @@ function MinesweeperGame({ board, prevClickResult}: Props) {
           click(clickIndex) {
             return handleClick(clickIndex, prev, prev.mines);
           },
-          mines: {
+          mines: data.revealedMines ? data.revealedMines : {
             board: new Array<boolean>(data.board.length).fill(false),
             mineCount: prev.mines.mineCount,
             height: data.height,
@@ -211,6 +209,7 @@ function MinesweeperGame({ board, prevClickResult}: Props) {
           },
         };
       });
+      setClickResult(data.clickResult)
     },
   });
 
@@ -298,7 +297,7 @@ function MinesweeperGame({ board, prevClickResult}: Props) {
               }
             }}
           >
-            {flagIndecis[i] ? "⛳️" : b === 0 || b === "?" ? " " :  b}
+            {playerBoard.board[i] === "⁉️" ? "⁉️" : flagIndecis[i] ? "⛳️" : b === 0 || b === "?" ? " " :  b}
           </div>
         ))}
       </div>

@@ -43,6 +43,7 @@ export type PlayerBoardServerData = {
   height: number;
   board: PlayerBox[];
   clickResult: ClickResult;
+  revealedMines?: MineBoard;
 };
 export const generateBoardAction = async (
   args: z.infer<typeof genBoardArgs>
@@ -91,7 +92,7 @@ export const generateBoardAction = async (
     width: defaultPlayerBoard.width,
     height: defaultPlayerBoard.height,
     board: defaultPlayerBoard.board,
-    clickResult: {clickedBoxes: []}
+    clickResult: { clickedBoxes: [] },
   };
   return res;
 };
@@ -142,7 +143,10 @@ class PlayerBoardDTO implements PlayerBoard {
     const height = board.mineBoard.height;
     const mines: MineBoard = {
       ...board.mineBoard,
-      mineCount: board.boxes.reduce<number>((prev, curr) => curr.mine.isMine ? prev + 1 : prev, 0),
+      mineCount: board.boxes.reduce<number>(
+        (prev, curr) => (curr.mine.isMine ? prev + 1 : prev),
+        0
+      ),
       board: board.boxes.map((b) => b.mine.isMine),
     };
     const playerboard: PlayerBox[] = genBoard(
@@ -169,15 +173,25 @@ class PlayerBoardDTO implements PlayerBoard {
       data: { boxState: "CLICKED" },
     });
 
-    results.gameOver && await prisma.playerMineSweeperBoard.update({where: {id: this.playerBoardId}, data: {gameOver: results.gameOver === "won" ? "WON" : "LOST"}})
+    results.gameOver &&
+      (await prisma.playerMineSweeperBoard.update({
+        where: { id: this.playerBoardId },
+        data: { gameOver: results.gameOver === "won" ? "WON" : "LOST" },
+      }));
 
-    return {...this, clickResult: results}
+    return {
+      height: this.height,
+      width: this.width,
+      board: this.board,
+      clickResult: results,
+      revealedMines: results.gameOver !== undefined ? this.mines : undefined,
+    };
 
     //const update = prisma.playerMineSweeperBoard.update({where: {id: this.playerBoardId}, data: {boxes: {updateMany: {data: {}}}}})
   }
 }
 
-const clickActionArgs = z.array(z.number().int().gte(0)).min(1)
+const clickActionArgs = z.array(z.number().int().gte(0)).min(1);
 export const clickAction = async (args: z.infer<typeof clickActionArgs>) => {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -185,5 +199,5 @@ export const clickAction = async (args: z.infer<typeof clickActionArgs>) => {
   }
   const boxesToClick = clickActionArgs.parse(args);
   const playerboard = await PlayerBoardDTO.new(session.user.id!);
-  return await playerboard.handleClicks(boxesToClick)
+  return await playerboard.handleClicks(boxesToClick);
 };

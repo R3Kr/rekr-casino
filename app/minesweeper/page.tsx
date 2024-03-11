@@ -15,7 +15,7 @@ export default async function page() {
   const board = await prisma.playerMineSweeperBoard.findFirst({
     where: {
       playerId: session.user.id!,
-      gameOver: null//NOT: [{ gameOver: "LOST" }, { gameOver: "WON" }],
+      gameOver: null, //NOT: [{ gameOver: "LOST" }, { gameOver: "WON" }],
     },
     include: {
       boxes: {
@@ -49,7 +49,10 @@ export default async function page() {
     playerBoard,
     {
       board: board.boxes.map((b) => b.mine.isMine),
-      mineCount: board.boxes.reduce<number>((prev, curr) => curr.mine.isMine ? prev + 1 : prev, 0),
+      mineCount: board.boxes.reduce<number>(
+        (prev, curr) => (curr.mine.isMine ? prev + 1 : prev),
+        0
+      ),
       width: board.mineBoard.width,
       height: board.mineBoard.height,
     }
@@ -57,7 +60,14 @@ export default async function page() {
 
   return (
     <div className="text-xl text-white">
-      <Minesweeper p={{...playerBoard, clickResult: res}}/>
+      <Minesweeper
+        p={{
+          board: playerBoard.board,
+          height: playerBoard.height,
+          width: playerBoard.width,
+          clickResult: res,
+        }}
+      />
     </div>
   );
 }
