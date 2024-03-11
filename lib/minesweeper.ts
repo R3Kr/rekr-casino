@@ -179,6 +179,7 @@ export const toggleFlag = (clickIndex: number, playerBoard: PlayerBoard) => {
   } else if (playerBoard.board[clickIndex] === "⛳️") {
     playerBoard.board[clickIndex] = "?";
   }
+
 };
 
 const clickSurrounding = (

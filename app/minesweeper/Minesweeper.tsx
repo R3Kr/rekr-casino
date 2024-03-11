@@ -173,7 +173,7 @@ const getColor = (text: string): string => {
 function MinesweeperGame({ board, prevClickResult}: Props) {
   const [playerBoard, setPlayerBoard] = useState(board);
   const [flagIndecis, setFlagindeces] = useState(
-    board.board.filter((b) => b === "⛳️").map((b, i) => i)
+    board.board.map((b, i) => b === "⛳️" ? true : false)
   );
   const [{ gameOver, mine: gameOverMine }, setClickResult] =
     useState<ClickResult>(prevClickResult ? prevClickResult : {clickedBoxes: []});
@@ -191,7 +191,7 @@ function MinesweeperGame({ board, prevClickResult}: Props) {
     console.log(flagIndecis);
   }, [flagIndecis]);
 
-  const { mutate, isPending } = useMutation({
+  const { mutate, variables, isPending } = useMutation({
     mutationKey: ["board"],
     mutationFn: (boxesToClick: number[]) => playerBoard.board.find(b => typeof b === "number") === undefined ?  generateBoardAction({width: playerBoard.width, height: playerBoard.height, mines: playerBoard.mines.mineCount, firstClick: boxesToClick[0]}) : clickAction(boxesToClick),
     onSuccess(data, variables, context) {
@@ -253,7 +253,7 @@ function MinesweeperGame({ board, prevClickResult}: Props) {
                 : gameOverMine === i
                 ? "bg-red-500"
                 : "bg-amber-50"
-            } `}
+            } ${isPending && variables.includes(i) && "bg-amber-50"}`}
             // onMouseOver={() => {
             //   if (gameOver) {
             //     return;
@@ -293,11 +293,12 @@ function MinesweeperGame({ board, prevClickResult}: Props) {
                 toClick && mutate(toClick);
               } else {
                 toggleFlag(i, playerBoard);
-                setFlagindeces((prev) => [...prev, i]);
+                flagIndecis[i] = !flagIndecis[i]
+                setFlagindeces([...flagIndecis]);
               }
             }}
           >
-            {flagIndecis.includes(i) ? "⛳️" : b === 0 || b === "?" ? " " :  b}
+            {flagIndecis[i] ? "⛳️" : b === 0 || b === "?" ? " " :  b}
           </div>
         ))}
       </div>
