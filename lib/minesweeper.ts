@@ -1,11 +1,12 @@
 import { boolean } from "zod";
 
-type Mine = boolean;
-type PlayerBox = number | "?" | "⛳️" | "☠️" | "⁉️";
+export type Mine = boolean;
+export type PlayerBox = number | "?" | "⛳️" | "☠️" | "⁉️";
 
 export type MineBoard = {
   readonly width: number;
   readonly height: number;
+  readonly mineCount: number;
   readonly board: Mine[];
 };
 export type PlayerBoard = {
@@ -22,6 +23,7 @@ export class DefaultPlayerBoard implements PlayerBoard {
   board: PlayerBox[];
   mineCount: number;
   mines: MineBoard;
+    defaultPlayerBoard: any;
 
   constructor(width: number, height: number, mineCount: number) {
     this.width = width;
@@ -30,6 +32,7 @@ export class DefaultPlayerBoard implements PlayerBoard {
     this.mines = {
       width,
       height,
+      mineCount: mineCount,
       board: new Array(width * height).fill(false),
     };
     this.mineCount = mineCount;
@@ -69,13 +72,13 @@ export const genBombs = (
       bombsPlaced++;
     }
   }
-  const res: MineBoard = { width: x, height: y, board: board };
+  const res: MineBoard = { width: x, height: y,mineCount: bombs, board: board };
   return res;
 };
 
-const genBoard = (mineboard: MineBoard) => {
-  return mineboard.board.map((b, i) =>
-    b ? "☠️" : adjecentBombs(i, mineboard)
+export const genBoard = (mineboard: MineBoard, clicked: number[]) => {
+  return mineboard.board.map<PlayerBox>((b, i) =>
+    clicked.includes(i) ? (b ? "☠️" : adjecentBombs(i, mineboard)) : "?"
   );
 };
 
@@ -93,7 +96,7 @@ export const boxesToClickFromMiddleMouse = (
   mineboard: MineBoard
 ) => {
   if (typeof playerBoard.board[clickIndex] !== "number") {
-    return [];
+    return undefined;
   }
   const adjSquares = adjecentSquares(clickIndex, mineboard);
 
@@ -108,28 +111,32 @@ export const boxesToClickFromMiddleMouse = (
 export type ClickResult = {
   readonly gameOver?: "won" | "lost";
   readonly mine?: number;
+  readonly clickedBoxes: number[]
 };
 
 export const handleClick = (
   clickIndex: number,
-  playerBoard: PlayerBoard,
+  playerBoard: Omit<PlayerBoard, "click">,
   mineboard: MineBoard
 ) => {
+  const clickedBoxes:Set<number> = new Set()
   playerBoard.board[clickIndex] = mineboard.board[clickIndex]
     ? "☠️"
     : adjecentBombs(clickIndex, mineboard);
+  clickedBoxes.add(clickIndex);
   if (playerBoard.board[clickIndex] === 0) {
-    clickSurrounding(clickIndex, playerBoard, mineboard);
+    const surroundRes = clickSurrounding(clickIndex, playerBoard, mineboard);
+    surroundRes.flatMap(r => r.clickedBoxes).forEach(index => clickedBoxes.add(index))
   }
   const hasWon =
     mineboard.board.filter((m) => m === false).length ===
     playerBoard.board.filter((b) => typeof b === "number").length;
   const res: ClickResult =
     playerBoard.board[clickIndex] === "☠️"
-      ? { gameOver: "lost", mine: clickIndex }
+      ? { gameOver: "lost", mine: clickIndex, clickedBoxes: Array.from(clickedBoxes) }
       : hasWon
-      ? { gameOver: "won" }
-      : {};
+      ? { gameOver: "won", clickedBoxes: Array.from(clickedBoxes)}
+      : {clickedBoxes: Array.from(clickedBoxes)};
   return res;
 };
 
@@ -138,15 +145,17 @@ export const handleClicks = (
   playerBoard: PlayerBoard,
   mineboard: MineBoard
 ) => {
-  let result: ClickResult = {};
+  const clickedBoxes:Set<number> = new Set()
+  let result: ClickResult = {clickedBoxes: []};
   for (let i = 0; i < clickIndices.length; i++) {
     const index = clickIndices[i];
     result = handleClick(index, playerBoard, mineboard);
+    result.clickedBoxes.forEach(b => clickedBoxes.add(b))
     if (result.gameOver === "lost") {
-      return result;
+      return {...result, clickedBoxes: Array.from(clickedBoxes)};
     }
   }
-  return result;
+  return {...result, clickedBoxes: Array.from(clickedBoxes)};
 };
 
 export const revealPlayerBoard = (
@@ -162,6 +171,8 @@ export const revealPlayerBoard = (
   }
 };
 
+
+
 export const toggleFlag = (clickIndex: number, playerBoard: PlayerBoard) => {
   if (playerBoard.board[clickIndex] === "?") {
     playerBoard.board[clickIndex] = "⛳️";
@@ -172,12 +183,12 @@ export const toggleFlag = (clickIndex: number, playerBoard: PlayerBoard) => {
 
 const clickSurrounding = (
   clickIndex: number,
-  playerBoard: PlayerBoard,
+  playerBoard: Omit<PlayerBoard, "click">,
   mineboard: MineBoard
 ) => {
-  adjecentSquares(clickIndex, mineboard)
+  return adjecentSquares(clickIndex, mineboard)
     .filter((num) => playerBoard.board[num] === "?")
-    .forEach((num) => handleClick(num, playerBoard, mineboard));
+    .map((num) => handleClick(num, playerBoard, mineboard));
 };
 
 const adjecentSquares = (box: number, { width, height, board }: MineBoard | PlayerBoard) => {
