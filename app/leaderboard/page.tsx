@@ -71,7 +71,7 @@ export default async function Page() {
           <th className="p-2">Mine ratio</th>
         </tr>
         {minesweeper
-          .toSorted((a, b) => b._count.boxes / (b.mineBoard.height * b.mineBoard.width) - a._count.boxes / (a.mineBoard.height * a.mineBoard.width))
+          .sort((a, b) => b._count.boxes / (b.mineBoard.height * b.mineBoard.width) - a._count.boxes / (a.mineBoard.height * a.mineBoard.width))
           .map((s) => (
             <tr key={s.player.name} className="bg-green-500">
               <td key={s.player.name + "1"} className="p-2">
