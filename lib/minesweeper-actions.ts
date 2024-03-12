@@ -3,7 +3,7 @@
 import { getServerSession } from "next-auth";
 import { z } from "zod";
 import { authOptions } from "./authOptions";
-import { redirect } from "next/dist/server/api-utils";
+import { revalidatePath } from "next/cache";
 import {
   ClickResult,
   DefaultPlayerBoard,
@@ -18,8 +18,8 @@ import prisma from "./db";
 
 const genBoardArgs = z
   .object({
-    width: z.number().int().gte(10, "at least 10 width"),
-    height: z.number().int().gte(10, "at least 10 height"),
+    width: z.number().int().gte(9, "at least 9 width"),
+    height: z.number().int().gte(9, "at least 9 height"),
     mines: z.number().int().gte(10, "at least 10 mines"),
     firstClick: z.number().int().gte(0, "invalid index"),
   })
@@ -81,7 +81,7 @@ export const generateBoardAction = async (
           data: defaultPlayerBoard.board.map((b, i) => {
             return {
               mineId: mineboard.mines[i].id,
-              boxState: b === "?" ? "NOTCLICKED" : "CLICKED",
+              boxState: b === "unknown" ? "NOTCLICKED" : "CLICKED",
             };
           }),
         },
@@ -200,4 +200,8 @@ export const clickAction = async (args: z.infer<typeof clickActionArgs>) => {
   const boxesToClick = clickActionArgs.parse(args);
   const playerboard = await PlayerBoardDTO.new(session.user.id!);
   return await playerboard.handleClicks(boxesToClick);
+};
+
+export const playAgain = () => {
+  return revalidatePath("/minesweeper", "page");
 };

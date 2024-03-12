@@ -1,7 +1,7 @@
 import { boolean } from "zod";
 
 export type Mine = boolean;
-export type PlayerBox = number | "?" | "⛳️" | "☠️" | "⁉️";
+export type PlayerBox = number | "unknown" | "⛳️" | "☠️" | "⁉️" | "?";
 
 export type MineBoard = {
   readonly width: number;
@@ -23,12 +23,12 @@ export class DefaultPlayerBoard implements PlayerBoard {
   board: PlayerBox[];
   mineCount: number;
   mines: MineBoard;
-    defaultPlayerBoard: any;
+  defaultPlayerBoard: any;
 
   constructor(width: number, height: number, mineCount: number) {
     this.width = width;
     this.height = height;
-    this.board = new Array(width * height).fill("?");
+    this.board = new Array(width * height).fill("unknown");
     this.mines = {
       width,
       height,
@@ -39,11 +39,11 @@ export class DefaultPlayerBoard implements PlayerBoard {
   }
 
   click(clickIndex: number): ClickResult {
-    const safeZone = [...adjecentSquares(clickIndex, this), clickIndex]
+    const safeZone = [...adjecentSquares(clickIndex, this), clickIndex];
 
     this.mines = genBombs(this.width, this.height, this.mineCount, safeZone);
     this.click = this.handleClickPostFirstClick;
-    return this.click(clickIndex)
+    return this.click(clickIndex);
   }
   handleClickPostFirstClick(clickIndex: number) {
     return handleClick(clickIndex, this, this.mines);
@@ -72,13 +72,18 @@ export const genBombs = (
       bombsPlaced++;
     }
   }
-  const res: MineBoard = { width: x, height: y,mineCount: bombs, board: board };
+  const res: MineBoard = {
+    width: x,
+    height: y,
+    mineCount: bombs,
+    board: board,
+  };
   return res;
 };
 
 export const genBoard = (mineboard: MineBoard, clicked: number[]) => {
   return mineboard.board.map<PlayerBox>((b, i) =>
-    clicked.includes(i) ? (b ? "☠️" : adjecentBombs(i, mineboard)) : "?"
+    clicked.includes(i) ? (b ? "☠️" : adjecentBombs(i, mineboard)) : "unknown"
   );
 };
 
@@ -86,32 +91,46 @@ export const genPlayerBoard = ({ width, height }: MineBoard) => {
   return {
     width: width,
     height: height,
-    board: new Array<PlayerBox>(width * height).fill("?"),
+    board: new Array<PlayerBox>(width * height).fill("unknown"),
   };
 };
 
+type MiddleMouseResult = {
+  nextAction: "click" | "flash";
+  indecis: number[];
+};
 export const boxesToClickFromMiddleMouse = (
   clickIndex: number,
   playerBoard: PlayerBoard,
-  mineboard: MineBoard
 ) => {
+  let result: MiddleMouseResult | undefined;
   if (typeof playerBoard.board[clickIndex] !== "number") {
-    return undefined;
+    return result;
   }
-  const adjSquares = adjecentSquares(clickIndex, mineboard);
+  const adjSquares = adjecentSquares(clickIndex, playerBoard);
 
   const adjecentFlags = adjSquares.filter(
     (val) => playerBoard.board[val] === "⛳️"
   ).length;
   if ((playerBoard.board[clickIndex] as number) <= adjecentFlags) {
-    return adjSquares.filter((val) => playerBoard.board[val] === "?");
+    result = {
+      nextAction: "click",
+      indecis: adjSquares.filter((val) => playerBoard.board[val] === "unknown"),
+    };
   }
+  else {
+    result = {
+      nextAction: "flash",
+      indecis: adjSquares.filter((val) => playerBoard.board[val] === "unknown"),
+    };
+  }
+  return result;
 };
 
 export type ClickResult = {
   readonly gameOver?: "won" | "lost";
   readonly mine?: number;
-  readonly clickedBoxes: number[]
+  readonly clickedBoxes: number[];
 };
 
 export const handleClick = (
@@ -119,24 +138,30 @@ export const handleClick = (
   playerBoard: Omit<PlayerBoard, "click">,
   mineboard: MineBoard
 ) => {
-  const clickedBoxes:Set<number> = new Set()
+  const clickedBoxes: Set<number> = new Set();
   playerBoard.board[clickIndex] = mineboard.board[clickIndex]
     ? "☠️"
     : adjecentBombs(clickIndex, mineboard);
   clickedBoxes.add(clickIndex);
   if (playerBoard.board[clickIndex] === 0) {
     const surroundRes = clickSurrounding(clickIndex, playerBoard, mineboard);
-    surroundRes.flatMap(r => r.clickedBoxes).forEach(index => clickedBoxes.add(index))
+    surroundRes
+      .flatMap((r) => r.clickedBoxes)
+      .forEach((index) => clickedBoxes.add(index));
   }
   const hasWon =
     mineboard.board.filter((m) => m === false).length ===
     playerBoard.board.filter((b) => typeof b === "number").length;
   const res: ClickResult =
     playerBoard.board[clickIndex] === "☠️"
-      ? { gameOver: "lost", mine: clickIndex, clickedBoxes: Array.from(clickedBoxes) }
+      ? {
+          gameOver: "lost",
+          mine: clickIndex,
+          clickedBoxes: Array.from(clickedBoxes),
+        }
       : hasWon
-      ? { gameOver: "won", clickedBoxes: Array.from(clickedBoxes)}
-      : {clickedBoxes: Array.from(clickedBoxes)};
+      ? { gameOver: "won", clickedBoxes: Array.from(clickedBoxes) }
+      : { clickedBoxes: Array.from(clickedBoxes) };
   return res;
 };
 
@@ -145,17 +170,17 @@ export const handleClicks = (
   playerBoard: PlayerBoard,
   mineboard: MineBoard
 ) => {
-  const clickedBoxes:Set<number> = new Set()
-  let result: ClickResult = {clickedBoxes: []};
+  const clickedBoxes: Set<number> = new Set();
+  let result: ClickResult = { clickedBoxes: [] };
   for (let i = 0; i < clickIndices.length; i++) {
     const index = clickIndices[i];
     result = handleClick(index, playerBoard, mineboard);
-    result.clickedBoxes.forEach(b => clickedBoxes.add(b))
+    result.clickedBoxes.forEach((b) => clickedBoxes.add(b));
     if (result.gameOver === "lost") {
-      return {...result, clickedBoxes: Array.from(clickedBoxes)};
+      return { ...result, clickedBoxes: Array.from(clickedBoxes) };
     }
   }
-  return {...result, clickedBoxes: Array.from(clickedBoxes)};
+  return { ...result, clickedBoxes: Array.from(clickedBoxes) };
 };
 
 export const revealPlayerBoard = (
@@ -171,15 +196,16 @@ export const revealPlayerBoard = (
   }
 };
 
-
-
 export const toggleFlag = (clickIndex: number, playerBoard: PlayerBoard) => {
-  if (playerBoard.board[clickIndex] === "?") {
+  if (playerBoard.board[clickIndex] === "unknown") {
     playerBoard.board[clickIndex] = "⛳️";
   } else if (playerBoard.board[clickIndex] === "⛳️") {
     playerBoard.board[clickIndex] = "?";
   }
-
+  else if (playerBoard.board[clickIndex] === "?") {
+    playerBoard.board[clickIndex] = "unknown";
+  }
+  return playerBoard.board[clickIndex];
 };
 
 const clickSurrounding = (
@@ -188,11 +214,14 @@ const clickSurrounding = (
   mineboard: MineBoard
 ) => {
   return adjecentSquares(clickIndex, mineboard)
-    .filter((num) => playerBoard.board[num] === "?")
+    .filter((num) => playerBoard.board[num] === "unknown")
     .map((num) => handleClick(num, playerBoard, mineboard));
 };
 
-const adjecentSquares = (box: number, { width, height, board }: MineBoard | PlayerBoard) => {
+const adjecentSquares = (
+  box: number,
+  { width, height, board }: MineBoard | PlayerBoard
+) => {
   const adjecentSquares: number[] = [];
 
   //left
