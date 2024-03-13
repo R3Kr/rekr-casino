@@ -55,7 +55,9 @@ class DefaultClientPlayerBoard extends DefaultPlayerBoard {
 
 export default function Minesweeper({ p }: { p?: PlayerBoardServerData }) {
   const [shouldPlay, setShouldPlay] = useState(false);
-  const [level, setLevel] = useState<"beginner" | "intermediate" | "expert" | "custom">("beginner")
+  const [level, setLevel] = useState<
+    "beginner" | "intermediate" | "expert" | "custom"
+  >("beginner");
   const widthInput = useRef<ElementRef<"input">>(null);
   const heightInput = useRef<ElementRef<"input">>(null);
   const minesInput = useRef<ElementRef<"input">>(null);
@@ -73,8 +75,8 @@ export default function Minesweeper({ p }: { p?: PlayerBoardServerData }) {
                   return handleClick(clickIndex, this, this.mines);
                 },
                 mines: {
-                  board: new Array<boolean>(p.board.length).fill(false),
-                  mineCount: 0, //this isnt used after forst click
+                  board: new Array<boolean>(p.board.length).fill(false), //client is not aware which squares are mines
+                  mineCount: p.minecount,
                   height: p.height,
                   width: p.width,
                 },
@@ -93,31 +95,83 @@ export default function Minesweeper({ p }: { p?: PlayerBoardServerData }) {
 
   return (
     <>
-      <button onClick={() => setLevel("beginner")} className={`btn btn-primary border-2 ${level === "beginner" && "border-green-400"}`}>Beginner</button>
-      <button onClick={() => setLevel("intermediate")} className={`btn btn-primary border-2 ${level === "intermediate" && "border-green-400"}`}>Intermediate</button>
-      <button onClick={() => setLevel("expert")} className={`btn btn-primary border-2 ${level === "expert" && "border-green-400"}`}>Expert</button>
-      <button onClick={() => setLevel("custom")} className={`btn btn-primary border-2 ${level === "custom" && "border-green-400"}`}>Custom</button>
+      <button
+        onClick={() => setLevel("beginner")}
+        className={`btn btn-primary border-2 ${
+          level === "beginner" && "border-green-400"
+        }`}
+      >
+        Beginner
+      </button>
+      <button
+        onClick={() => setLevel("intermediate")}
+        className={`btn btn-primary border-2 ${
+          level === "intermediate" && "border-green-400"
+        }`}
+      >
+        Intermediate
+      </button>
+      <button
+        onClick={() => setLevel("expert")}
+        className={`btn btn-primary border-2 ${
+          level === "expert" && "border-green-400"
+        }`}
+      >
+        Expert
+      </button>
+      <button
+        onClick={() => setLevel("custom")}
+        className={`btn btn-primary border-2 ${
+          level === "custom" && "border-green-400"
+        }`}
+      >
+        Custom
+      </button>
       <div className="flex flex-col">
         <label>Width: </label>
         <input
           defaultValue={10}
-          value={level === "beginner" ? 9 : level === "intermediate" ? 16 : level === "expert" ? 30 : undefined}
+          value={
+            level === "beginner"
+              ? 9
+              : level === "intermediate"
+              ? 16
+              : level === "expert"
+              ? 30
+              : undefined
+          }
           className="text-black"
           type="number"
           ref={widthInput}
-          ></input>
+        ></input>
         <label>Height: </label>
         <input
           defaultValue={10}
-          value={level === "beginner" ? 9 : level === "intermediate" ? 16 : level === "expert" ? 16 : undefined}
+          value={
+            level === "beginner"
+              ? 9
+              : level === "intermediate"
+              ? 16
+              : level === "expert"
+              ? 16
+              : undefined
+          }
           className="text-black"
           type="number"
           ref={heightInput}
-          ></input>
+        ></input>
         <label>Mines: </label>
         <input
           defaultValue={10}
-          value={level === "beginner" ? 10 : level === "intermediate" ? 40 : level === "expert" ? 99 : undefined}
+          value={
+            level === "beginner"
+              ? 10
+              : level === "intermediate"
+              ? 40
+              : level === "expert"
+              ? 99
+              : undefined
+          }
           className="text-black"
           type="number"
           ref={minesInput}
@@ -252,6 +306,11 @@ function MinesweeperGame({ board, prevClickResult, shouldPlay }: Props) {
           setGridSize(e.target.valueAsNumber);
         }}
       />
+      {!gameOver && (
+        <div className="p-2">{`☠️: ${
+          playerBoard.mines.mineCount - flagIndecis.filter((v) => v).length
+        }`}</div>
+      )}
       {gameOver && (
         <div className="flex gap-x-5 p-2">
           <div className="text-5xl">

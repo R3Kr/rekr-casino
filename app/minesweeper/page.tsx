@@ -65,6 +65,10 @@ export default async function page() {
           board: playerBoard.board,
           height: playerBoard.height,
           width: playerBoard.width,
+          minecount: board.boxes.reduce<number>(
+            (prev, curr) => (curr.mine.isMine ? prev + 1 : prev),
+            0
+          ),
           clickResult: res,
         }}
       />

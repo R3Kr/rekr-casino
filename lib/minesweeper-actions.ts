@@ -43,6 +43,7 @@ export type PlayerBoardServerData = {
   height: number;
   board: PlayerBox[];
   clickResult: ClickResult;
+  minecount: number;
   revealedMines?: MineBoard;
 };
 export const generateBoardAction = async (
@@ -92,6 +93,7 @@ export const generateBoardAction = async (
     width: defaultPlayerBoard.width,
     height: defaultPlayerBoard.height,
     board: defaultPlayerBoard.board,
+    minecount: defaultPlayerBoard.mineCount,
     clickResult: { clickedBoxes: [] },
   };
   return res;
@@ -184,6 +186,7 @@ class PlayerBoardDTO implements PlayerBoard {
       width: this.width,
       board: this.board,
       clickResult: results,
+      minecount: this.mines.mineCount,
       revealedMines: results.gameOver !== undefined ? this.mines : undefined,
     };
 
