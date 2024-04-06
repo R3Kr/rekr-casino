@@ -22,18 +22,18 @@ export default async function Page() {
     })
   )();
 
-  const minesweeperPromise = prisma.playerMineSweeperBoard.findMany({
-    select: {
-      _count: { select: { boxes: { where: { mine: { isMine: true } } } } },
-      mineBoard: { select: { width: true, height: true } },
-      player: { select: { name: true } },
-    },
-    where: { gameOver: "WON" },
-  });
+  // const minesweeperPromise = prisma.playerMineSweeperBoard.findMany({
+  //   select: {
+  //     _count: { select: { boxes: { where: { mine: { isMine: true } } } } },
+  //     mineBoard: { select: { width: true, height: true } },
+  //     player: { select: { name: true } },
+  //   },
+  //   where: { gameOver: "WON" },
+  // });
 
-  const [users, minesweeper] = await Promise.all([
+  const [users] = await Promise.all([
     usersPromise,
-    minesweeperPromise,
+   // minesweeperPromise,
   ]);
 
   return (
@@ -62,7 +62,7 @@ export default async function Page() {
           </tr>
         ))}
       </table>
-      <table className="shadow-2xl">
+      {/* <table className="shadow-2xl">
         <tr className="bg-green-700">
           <th className="p-2">Name</th>
           <th className="p-2">Width</th>
@@ -91,7 +91,7 @@ export default async function Page() {
               </td>
             </tr>
           ))}
-      </table>
+      </table> */}
     </Marquee>
   );
 }
